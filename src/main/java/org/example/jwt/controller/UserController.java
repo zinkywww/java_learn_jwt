@@ -4,6 +4,9 @@ package org.example.jwt.controller;
 import org.example.jwt.entity.User;
 import org.example.jwt.mapper.UserMapper;
 import org.example.jwt.utils.TokenUtils;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.bind.annotation.*;
@@ -19,6 +22,8 @@ public class UserController {
 
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
+
+    private static final Logger logger = LoggerFactory.getLogger(UserController.class);
 
     @GetMapping("/info")
     public String query(String token) {
@@ -36,11 +41,11 @@ public class UserController {
     public String save(@RequestBody User user) {
         List<User> list=userMapper.query(user);
         if(list.size()==1) {
-            System.out.println(user.getEmail());
+            logger.info("email:{}",user.getEmail());
             String token = TokenUtils.getToken(user.getEmail());
-            System.out.println(token);
+            logger.info("token:{}",token);
             stringRedisTemplate.opsForValue().set(token, user.getEmail());
-            System.out.println(stringRedisTemplate.opsForValue().get(token));
+            logger.info("redis save state:{}",stringRedisTemplate.opsForValue().get(token)!=null);
             return token;
         }
         else{
